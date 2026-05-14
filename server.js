@@ -15,8 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // ── CONSTANTES JUPITER v6 ───────────────────────
-const INPUT_MINT  = 'So11111111111111111111111111111111111111112'; // SOL (wrapped)
-const INPUT_LABEL = 'SOL';
+const INPUT_LABEL = 'SOL';    // aparece no path: /swap/SOL-TOKEN
 const FEE_WALLET  = '9GXNpv77WRacQfPaEdBog91uYFnJwdzJfiwuDWiAxgCs';
 const FEE_BPS     = 100;   // 100 bps = 1%
 
@@ -151,12 +150,13 @@ app.post('/api/swap', async (req, res) => {
     //  NOTA: platformFeeBps e feeAccount são os parâmetros corretos do
     //  Jupiter v6. O parâmetro "feeBps" foi descontinuado na v5/v6.
     //
+    // Jupiter v6: inputMint e outputMint vão apenas no PATH (SOL-TOKEN).
+    // Colocá-los também na query string é redundante e pode interferir
+    // no reconhecimento do referral. Apenas estes 3 parâmetros na query:
     const params = new URLSearchParams({
-      inputMint     : INPUT_MINT,
-      outputMint    : outputMint.trim(),
       inAmount      : amount,
-      platformFeeBps: FEE_BPS,      // 100 bps = 1%
-      feeAccount    : FEE_WALLET,   // recebe taxa on-chain
+      platformFeeBps: FEE_BPS,    // 100 bps = 1%
+      feeAccount    : FEE_WALLET, // carteira que recebe a taxa on-chain
     });
 
     const url = `https://jup.ag/swap/${INPUT_LABEL}-${outputMint.trim()}?${params.toString()}`;
@@ -182,5 +182,5 @@ app.listen(PORT, () => {
   console.log(`✅ Coinhat-Feeds rodando na porta ${PORT}`);
   console.log(`   FEE_WALLET : ${FEE_WALLET}`);
   console.log(`   FEE_BPS    : ${FEE_BPS} (${FEE_BPS / 100}%)`);
-  console.log(`   INPUT_MINT : ${INPUT_MINT} (SOL)`);
+  console.log(`   INPUT      : ${INPUT_LABEL} (path only — sem inputMint na query)`);
 });
